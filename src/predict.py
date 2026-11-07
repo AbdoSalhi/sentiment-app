@@ -8,28 +8,46 @@ Usage :
 import sys
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal, Protocol, TypedDict, cast
 
 import joblib
 
 MODELE = Path(__file__).resolve().parents[1] / "models" / "sentiment.joblib"
 
 
+class Prediction(TypedDict):
+    label: Literal["positive", "negative"]
+    score: float
+
+
+class ModelPipeline(Protocol):
+    classes_: object
+
+    def predict(self, texts: list[str]) -> object: ...
+
+    def predict_proba(self, texts: list[str]) -> object: ...
+
+
 @lru_cache(maxsize=1)
-def charger_modele():
+def charger_modele() -> ModelPipeline:
     """Chargé une seule fois par processus, pas à chaque appel."""
     if not MODELE.exists():
         raise FileNotFoundError("models/sentiment.joblib absent : lancez python src/train.py")
-    return joblib.load(MODELE)
+    return cast(ModelPipeline, joblib.load(MODELE))
 
 
-def predict(texte: str) -> dict:
+def predict(texte: str) -> Prediction:
     """Renvoie {'label': 'positive'|'negative', 'score': float}."""
     if not isinstance(texte, str) or not texte.strip():
         raise ValueError("texte vide")
     pipeline = charger_modele()
-    etiquette = pipeline.predict([texte])[0]
-    score = float(pipeline.predict_proba([texte]).max())
-    return {"label": etiquette, "score": round(score, 4)}
+    etiquette = str(cast(list[str], pipeline.predict([texte]))[0])
+    if etiquette not in {"positive", "negative"}:
+        raise ValueError("étiquette du modèle inconnue")
+    probabilites = cast(list[list[float]], pipeline.predict_proba([texte]))
+    score = float(max(probabilites[0]))
+    label: Literal["positive", "negative"] = "positive" if etiquette == "positive" else "negative"
+    return {"label": label, "score": round(score, 4)}
 
 
 def main() -> int:

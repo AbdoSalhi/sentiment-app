@@ -1,0 +1,14 @@
+repos:
+  - repo: local
+    hooks:
+      - id: ruff
+        name: ruff
+        entry: python -m ruff check
+        language: system
+        types_or: [python, jupyter]
+      - id: mypy
+        name: mypy
+        entry: python -m mypy api
+        language: system
+        pass_filenames: false
+        types: [python]

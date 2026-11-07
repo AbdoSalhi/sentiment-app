@@ -1,0 +1,21 @@
+text,attendu,difficulte,erreur_connue
+Le colis est arrivé rapidement et le produit fonctionne parfaitement.,POSITIVE,,
+La batterie ne tient pas la charge et le téléphone chauffe beaucoup.,NEGATIVE,,
+"Je ne regrette absolument pas cet achat, la qualité est excellente.",POSITIVE,négation,
+"Magnifique service, trois semaines de retard et aucune réponse du vendeur.",NEGATIVE,ironie,
+Le carton était abîmé mais le produit est impeccable et je suis satisfait.,POSITIVE,avis mitige,
+Le design est élégant mais les fonctionnalités sont décevantes et peu fiables.,NEGATIVE,avis mitige,
+Cette application facilite vraiment mon travail quotidien et reste très intuitive.,POSITIVE,autre domaine,
+Le restaurant possède une belle décoration mais les plats sont froids et sans goût.,NEGATIVE,autre domaine,Avis de restaurant hors domaine : les termes positifs de la décoration dominent les critiques des plats (POSITIVE 0.6535).
+"Installation facile, instructions claires et résultat supérieur à mes attentes.",POSITIVE,,
+Le service après-vente refuse de répondre à mes demandes de remboursement.,NEGATIVE,,
+"Malgré une livraison un peu lente, cet ordinateur fonctionne très bien.",POSITIVE,avis mitige,
+Le produit semblait solide au début mais il est devenu inutilisable après une semaine.,NEGATIVE,avis mitige,
+"Je pensais être déçu, pourtant cette expérience a dépassé mes attentes.",POSITIVE,avis mitige,
+"Bravo pour cette livraison express, seulement un mois pour recevoir mon colis.",NEGATIVE,ironie,
+Ce logiciel n'est pas aussi compliqué que prévu et ses outils sont efficaces.,POSITIVE,négation,
+"Les premières utilisations étaient agréables, cependant les performances se sont rapidement dégradées.",NEGATIVE,avis mitige,
+Cette formation en ligne explique clairement les concepts et propose des exercices utiles.,POSITIVE,autre domaine,
+La réservation de l'hôtel était simple mais la chambre était sale et bruyante.,NEGATIVE,autre domaine,
+Je n'ai rencontré aucun problème et le support technique a été très réactif.,POSITIVE,négation,
+Le prix est raisonnable mais les matériaux sont fragiles et la finition médiocre.,NEGATIVE,avis mitige,Avis mitigé : le prix raisonnable domine les défauts des matériaux et de la finition (POSITIVE 0.6359).

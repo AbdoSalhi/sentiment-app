@@ -1,0 +1,5 @@
+ruff==0.14.*
+mypy==1.18.*
+pytest-cov==6.0.*
+hypothesis==6.131.*
+pre-commit==4.2.*

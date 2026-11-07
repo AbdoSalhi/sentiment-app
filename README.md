@@ -58,12 +58,38 @@ doit être entraîné sur chaque poste. La CI le réentraîne avant les tests.
 Ouvrir [la documentation interactive](http://127.0.0.1:8000/docs).
 `GET /health` indique `OK` et le nom du modèle.
 `POST /predict` accepte `{"text": "Livraison rapide, très satisfait"}` et
-renvoie `label` (`POSITIVE` ou `NEGATIVE`), `score` (entre 0 et 1) et `text`.
+renvoie `label` (`POSITIVE`, `NEGATIVE` ou `INDETERMINE` depuis le TP4),
+`score` (entre 0 et 1) et `text`.
 Le texte doit être une chaîne de 1 à 2000 caractères. Un texte vide, composé
 d'espaces, absent ou numérique est refusé avec le statut 422.
 Sans `models/sentiment.joblib`, l'API refuse de démarrer.
 
 Le compte rendu et les observations sont dans [docs/semaine3.md](docs/semaine3.md).
+
+## TP4 : tests approfondis et qualité
+
+Avec l'environnement virtuel activé et le modèle de démonstration entraîné :
+
+```powershell
+python -m pip install -r requirements-dev.txt
+python -m pre_commit install
+python src/courbe_seuil.py
+python src/bilan_jeu_or.py
+python -m ruff check .
+python -m mypy api
+python -m pytest -q --cov=api --cov-report=term-missing --cov-fail-under=95
+```
+
+Sous 0,60 de confiance, l'API renvoie `INDETERMINE` et conserve le score.
+Les textes composés de blancs sont refusés par le schéma, avec la même
+forme d'erreur 422 que les autres entrées invalides. Une indisponibilité
+après démarrage donne 503 ; une panne de prédiction donne 500.
+
+Les vingt avis indépendants sont dans `data/jeu_or.csv`. Deux erreurs connues
+sont conservées en `xfail` strict. Les mesures et justifications sont dans
+[docs/semaine4.md](docs/semaine4.md). La CI applique les mêmes contrôles.
+Si le dossier temporaire Windows est inaccessible, ajouter
+`--basetemp=.pytest_cache/tp4-temp` à la commande pytest.
 
 ## Membres du binôme
 
