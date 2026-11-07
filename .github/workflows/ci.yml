@@ -1,14 +1,14 @@
 name: CI
 on: [push, pull_request]
 jobs:
-  tp4:
+  tp5:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
       - uses: actions/setup-python@v5
         with: { python-version: "3.11" }
-      - name: Installer les dépendances TP1 à TP3
+      - name: Installer les dépendances TP1 à TP5
         run: |
           python -m venv .venv
           . .venv/bin/activate
@@ -20,6 +20,8 @@ jobs:
           python src/train.py
       - name: Outils de qualité (TP4)
         run: . .venv/bin/activate && pip install -r requirements-dev.txt
+      - name: Compatibilité des dépendances
+        run: . .venv/bin/activate && python -m pip check
       - name: ruff
         run: . .venv/bin/activate && python -m ruff check .
       - name: mypy

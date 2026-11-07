@@ -51,7 +51,7 @@ python -m pytest -q
 python -m uvicorn api.main:app --reload
 ```
 
-`requirements-ci.txt` contient les dépendances nécessaires aux TP1 à TP3 ;
+`requirements-ci.txt` contient les dépendances nécessaires aux TP1 à TP5 ;
 `requirements.txt` couvre tout le semestre. Le modèle reste ignoré par Git et
 doit être entraîné sur chaque poste. La CI le réentraîne avant les tests.
 
@@ -90,6 +90,44 @@ sont conservées en `xfail` strict. Les mesures et justifications sont dans
 [docs/semaine4.md](docs/semaine4.md). La CI applique les mêmes contrôles.
 Si le dossier temporaire Windows est inaccessible, ajouter
 `--basetemp=.pytest_cache/tp4-temp` à la commande pytest.
+
+## TP5 : interface Streamlit
+
+L'interface analyse un avis ou un fichier CSV avec une colonne `text`.
+Elle affiche le verdict, la confiance et les abstentions, puis permet de
+télécharger les résultats du fichier. Un exemple est fourni dans
+`data/avis_exemple.csv`.
+
+Avec l'environnement activé :
+
+```powershell
+python -m pip install -r requirements-ci.txt -r requirements-dev.txt
+python src/make_demo.py
+python src/train.py
+```
+
+Dans un premier terminal :
+
+```powershell
+python -m uvicorn api.main:app --reload
+```
+
+Dans un second terminal, avec le même environnement activé :
+
+```powershell
+python -m streamlit run ui/app.py --server.headless true --browser.gatherUsageStats false
+```
+
+Ouvrir [l'interface](http://127.0.0.1:8501). Pour une API à une autre adresse,
+définir `$env:API_URL = "http://127.0.0.1:8001"` dans le terminal de Streamlit.
+Les tests n'exigent aucun serveur lancé :
+
+```powershell
+python -m pytest -q --cov=api --cov-report=term-missing --cov-fail-under=95
+```
+
+Les observations et les trois réponses du TP5 sont dans
+[docs/semaine5.md](docs/semaine5.md).
 
 ## Membres du binôme
 
