@@ -44,3 +44,4 @@ sentiment-app/
 | --- | --- | --- | --- |
 | Membre A | Taha Boudane | @BdTaha | |
 | Membre B | Salhi Abderrahmane | @AbdoSalhi | |
+| Membre C | Choukri Said | @Mrsaidchoukri | |
