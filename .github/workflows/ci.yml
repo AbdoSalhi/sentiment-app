@@ -1,12 +1,22 @@
 name: CI
 on: [push, pull_request]
 jobs:
-  tp1:
+  tp3:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
       - uses: actions/setup-python@v5
         with: { python-version: "3.11" }
-      - run: python -m venv .venv && . .venv/bin/activate && pip install pandas scikit-learn pytest
-      - run: . .venv/bin/activate && pytest -q
+      - name: Installer les dépendances TP1 à TP3
+        run: |
+          python -m venv .venv
+          . .venv/bin/activate
+          pip install -r requirements-ci.txt
+      - name: Modèle de démonstration, pour les tests de l'API (TP3)
+        run: |
+          . .venv/bin/activate
+          python src/make_demo.py
+          python src/train.py
+      - name: Tests
+        run: . .venv/bin/activate && python -m pytest -q
