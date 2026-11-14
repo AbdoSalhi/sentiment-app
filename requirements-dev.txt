@@ -5,3 +5,5 @@ hypothesis==6.131.*
 pre-commit==4.2.*
 # Compatible avec packaging<25, imposé par Streamlit 1.39.
 virtualenv==20.35.*
+
+build==1.6.*

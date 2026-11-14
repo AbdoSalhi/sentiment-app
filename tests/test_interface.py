@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 @pytest.fixture
 def page(monkeypatch):
-    monkeypatch.setattr(client, "creer_session", lambda: TestClient(app))
+    monkeypatch.setattr(client, "creer_session", lambda: TestClient(app, headers={"X-API-Key": "test-client-key-123456"}))
     return AppTest.from_file(str(ROOT / "ui" / "app.py"), default_timeout=20)
 
 
@@ -98,6 +98,7 @@ def test_fichier_et_telechargement(page, monkeypatch):
     assert list(table.columns) == ["text", "verdict", "confiance"]
     assert json.loads(page.json[0].value) == {"INDETERMINE": 1, "NEGATIVE": 2, "POSITIVE": 3}
     assert len(page.get("download_button")) == 1
+    assert len(page.get("arrow_vega_lite_chart")) == 2
     assert exported["filename"] == "resultats.csv"
     assert exported["data"].startswith(b"\xef\xbb\xbf")
     result = pd.read_csv(io.BytesIO(exported["data"]), encoding="utf-8-sig")

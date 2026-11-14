@@ -1,138 +1,132 @@
-# sentiment-app : dépôt du binôme
+# sentiment-app
 
-Application fil rouge du cours *Développement et déploiement d'applications intelligentes*.
-Ce dépôt grandit chaque semaine ; la semaine 1 met en place le cadrage et l'environnement.
+Application de classification d'avis français : modèle TF-IDF et régression
+logistique, API FastAPI, client web, interface Streamlit et paquet Python.
 
-## Installation (3 commandes)
+## Correspondance avec le manuel V1.1
 
-```bash
+Les anciens énoncés du dépôt utilisent une autre numérotation. Dans le manuel :
+Atelier 0 = cadrage/environnement ; TP1 = modèle/API ; TP2 = API protégée/client
+web ; TP3 = Streamlit/graphiques ; TP4 = paquet installable.
+
+## Installation sur Windows
+
+Depuis la racine du projet, avec Python 3.11 :
+
+```powershell
 python -m venv .venv
-source .venv/bin/activate        # Windows PowerShell : .venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m pip install -r requirements-ci.txt -r requirements-dev.txt
+.\.venv\Scripts\python.exe scripts/configurer.py
+.\.venv\Scripts\python.exe src/make_demo.py
+.\.venv\Scripts\python.exe src/train.py
 ```
 
-## Vérifier son installation
+`scripts/configurer.py` crée deux clés aléatoires dans `.env` sans les afficher.
+Il conserve toute configuration existante. Ne jamais publier `.env`.
+`requirements-ci.txt` couvre le volume 1 ; `requirements.txt` conserve les
+dépendances de tout le semestre. `requirements.lock` décrit l'environnement
+volume 1 vérifié le 14 novembre 2026.
 
-```bash
-python scripts/check_setup.py    # diagnostic lisible : versions, dossiers, Git
-pytest -q                        # mêmes vérifications sous forme de tests
-```
+## Lancer l'application
 
-La démarche complète de test, étape par étape, est dans `TESTS.md`.
-
-## Structure
-
-```text
-sentiment-app/
-├── README.md
-├── TP1-ENONCE.md    # énoncé du TP de la semaine 1
-├── TESTS.md         # démarche à suivre pour le test
-├── requirements.txt
-├── .gitignore
-├── data/            # jeux de données (versionnés par DVC à partir de la semaine 7)
-├── models/          # modèles entraînés (jamais dans Git)
-├── app/             # dossier réservé du kit TP1
-├── api/             # API FastAPI (semaine 3)
-├── ui/              # Streamlit (semaine 5)
-├── tests/           # pytest (semaine 1 : tests d'environnement)
-├── scripts/         # utilitaires (check_setup, nouveau cas de cadrage)
-└── docs/cadrage/    # fiches de cadrage du TP1
-```
-
-## TP3 : API FastAPI
-
-Depuis la racine du dépôt, avec Python 3.11 et l'environnement activé :
+Dans deux terminaux, à la racine :
 
 ```powershell
-python -m pip install -r requirements-ci.txt
-python src/make_demo.py
-python src/train.py
-python -m pytest -q
-python -m uvicorn api.main:app --reload
+.\.venv\Scripts\python.exe -m uvicorn api.main:app --reload
 ```
-
-`requirements-ci.txt` contient les dépendances nécessaires aux TP1 à TP5 ;
-`requirements.txt` couvre tout le semestre. Le modèle reste ignoré par Git et
-doit être entraîné sur chaque poste. La CI le réentraîne avant les tests.
-
-Ouvrir [la documentation interactive](http://127.0.0.1:8000/docs).
-`GET /health` indique `OK` et le nom du modèle.
-`POST /predict` accepte `{"text": "Livraison rapide, très satisfait"}` et
-renvoie `label` (`POSITIVE`, `NEGATIVE` ou `INDETERMINE` depuis le TP4),
-`score` (entre 0 et 1) et `text`.
-Le texte doit être une chaîne de 1 à 2000 caractères. Un texte vide, composé
-d'espaces, absent ou numérique est refusé avec le statut 422.
-Sans `models/sentiment.joblib`, l'API refuse de démarrer.
-
-Le compte rendu et les observations sont dans [docs/semaine3.md](docs/semaine3.md).
-
-## TP4 : tests approfondis et qualité
-
-Avec l'environnement virtuel activé et le modèle de démonstration entraîné :
 
 ```powershell
-python -m pip install -r requirements-dev.txt
-python -m pre_commit install
-python src/courbe_seuil.py
-python src/bilan_jeu_or.py
-python -m ruff check .
-python -m mypy api
-python -m pytest -q --cov=api --cov-report=term-missing --cov-fail-under=95
+.\.venv\Scripts\python.exe -m streamlit run ui/app.py --browser.gatherUsageStats false
 ```
 
-Sous 0,60 de confiance, l'API renvoie `INDETERMINE` et conserve le score.
-Les textes composés de blancs sont refusés par le schéma, avec la même
-forme d'erreur 422 que les autres entrées invalides. Une indisponibilité
-après démarrage donne 503 ; une panne de prédiction donne 500.
+API : http://127.0.0.1:8000/docs ; interface : http://localhost:8501.
+La page comporte un avis unitaire et un CSV (colonne `text`), le tableau des
+résultats, deux graphiques et un téléchargement. Exemple : `data/avis_exemple.csv`.
 
-Les vingt avis indépendants sont dans `data/jeu_or.csv`. Deux erreurs connues
-sont conservées en `xfail` strict. Les mesures et justifications sont dans
-[docs/semaine4.md](docs/semaine4.md). La CI applique les mêmes contrôles.
-Si le dossier temporaire Windows est inaccessible, ajouter
-`--basetemp=.pytest_cache/tp4-temp` à la commande pytest.
+## API versionnée
 
-## TP5 : interface Streamlit
+| Route | Accès | Résultat |
+| --- | --- | --- |
+| GET /health et /v1/health | Public | Santé du modèle |
+| POST /v1/predict | Clé client ou admin | label, score, text |
+| GET /v1/modele | Clé admin | Métriques et seuil d'abstention |
+| POST /predict | Compatibilité publique dépréciée | Prédiction et en-têtes de migration |
 
-L'interface analyse un avis ou un fichier CSV avec une colonne `text`.
-Elle affiche le verdict, la confiance et les abstentions, puis permet de
-télécharger les résultats du fichier. Un exemple est fourni dans
-`data/avis_exemple.csv`.
+Saisir la clé dans le bouton Authorize de `/docs` ou dans l'en-tête `X-API-Key`.
+`API_KEYS` contient les couples `clé:client,clé:admin` ; `API_KEY` est la clé
+client de Streamlit. Clés d'au moins 16 caractères ; configuration invalide
+refusée au démarrage. Sans clés, les routes protégées refusent toute demande.
 
-Avec l'environnement activé :
+Les erreurs de `/v1` suivent `{"erreur":{"code":"...","message":"...","champs":[]}}`.
+401 = clé absente/refusée ; 403 = rôle refusé ; 422 = entrée invalide ;
+503 = modèle indisponible ; 500 = panne interne sans détails sensibles.
+Textes de 1 à 2000 caractères, hors textes entièrement blancs.
+Sous 0,60 de confiance : `INDETERMINE`, à vérifier par un humain.
+
+## Client HTML et CORS
 
 ```powershell
-python -m pip install -r requirements-ci.txt -r requirements-dev.txt
-python src/make_demo.py
-python src/train.py
+.\.venv\Scripts\python.exe -m http.server 5500 --directory web
 ```
 
-Dans un premier terminal :
+Ouvrir http://localhost:5500, saisir l'adresse de l'API et la clé client locale.
+La clé reste dans le champ de la page, sans stockage persistant.
+`CORS_ORIGINS` autorise par défaut localhost et 127.0.0.1 sur le port 5500.
+Une page servie sur 5600 est refusée par le navigateur ; curl n'applique pas CORS.
+
+## Vérifications
 
 ```powershell
-python -m uvicorn api.main:app --reload
+.\.venv\Scripts\python.exe -m pip check
+.\.venv\Scripts\python.exe -m ruff check .
+.\.venv\Scripts\python.exe -m mypy api
+.\.venv\Scripts\python.exe -m pytest -q --cov=api --cov-report=term-missing --cov-fail-under=95
+node --test web/client.test.mjs
 ```
 
-Dans un second terminal, avec le même environnement activé :
+Résultat vérifié : 152 passed, 1 skipped, 2 xfailed ; couverture API 100 % ;
+12 tests web passent. Le test de paquet est ignoré dans le dépôt puis ses
+6 cas sont exécutés dans un environnement isolé par le vérificateur ci-dessous.
+Les deux xfail stricts documentent des limites connues du modèle.
+
+## Construire et vérifier le paquet
 
 ```powershell
-python -m streamlit run ui/app.py --server.headless true --browser.gatherUsageStats false
+.\.venv\Scripts\python.exe scripts/construire.py
+.\.venv\Scripts\python.exe scripts/verifier_livrable.py
 ```
 
-Ouvrir [l'interface](http://127.0.0.1:8501). Pour une API à une autre adresse,
-définir `$env:API_URL = "http://127.0.0.1:8001"` dans le terminal de Streamlit.
-Les tests n'exigent aucun serveur lancé :
+`dist/` reçoit la roue et la distribution source 1.0.0. Le modèle est embarqué
+dans les deux distributions ; il reste ignoré par Git. Le vérificateur crée
+un environnement neuf, installe la roue et teste hors des sources. Résultat
+attendu : CONFORME, rapport `docs/livrable-tp4.txt`.
+Voir `README-PAQUET.md` pour l'API Python et la commande `sentiment`.
 
-```powershell
-python -m pytest -q --cov=api --cov-report=term-missing --cov-fail-under=95
-```
+## Livraison GitHub
 
-Les observations et les trois réponses du TP5 sont dans
-[docs/semaine5.md](docs/semaine5.md).
+La CI vérifie Python, types, couverture, client web et paquet isolé, puis
+conserve les distributions et le rapport comme artefacts de workflow.
+Avant publication : relire les changements, commiter sous votre identité,
+pousser et attendre la CI verte. Étiqueter ce commit `v1.0.0` et créer une
+release contenant les deux fichiers de `dist/` et `docs/livrable-tp4.txt`.
+Ne jamais inclure `.env`, `.venv` ou le modèle brut dans le commit.
+Le complément Spring Boot du manuel est une activité distincte facultative.
 
-## Membres du binôme
+## Limites et comptes rendus
 
-| Rôle | Nom | Identifiant GitHub | Travail de la semaine 1 |
-| --- | --- | --- | --- |
-| Membre A | Taha Boudane | @BdTaha | |
-| Membre B | Salhi Abderrahmane | @AbdoSalhi | |
-| Membre C | Choukri Said | @Mrsaidchoukri | |
+Le modèle de démonstration est appris sur 290 avis synthétiques ; F1 macro
+0,879 sur 58 avis de test. La confiance n'est pas calibrée. Ce modèle classe
+le sentiment, pas l'urgence. L'ironie, les avis mitigés et les domaines nouveaux
+peuvent produire des erreurs. La publication Streamlit Cloud requiert une API
+hébergée et joignable ; une API sur localhost ne suffit pas.
+
+Les rapports `docs/semaine2.md` à `docs/semaine5.md` décrivent les anciennes
+séances. L'état présent est détaillé dans `docs/verification-manuel-v1.1.md`.
+
+## Membres
+
+| Nom | GitHub |
+| --- | --- |
+| Taha Boudane | @BdTaha |
+| Salhi Abderrahmane | @AbdoSalhi |
+| Choukri Said | @Mrsaidchoukri |

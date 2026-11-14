@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="fr"><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<title>Analyse de sentiment</title>
+<style>body{font:18px system-ui;max-width:650px;margin:60px auto;padding:20px}label{display:block;margin:16px 0}input,textarea,button{font:inherit;padding:10px;box-sizing:border-box;width:100%}output{display:block;margin-top:24px}</style>
+<h1>Analyser un avis</h1>
+<form><label>Adresse de l'API<input id="url" type="url" value="http://127.0.0.1:8000" required></label>
+<label>Clé d'API<input id="key" type="password" autocomplete="off" required></label>
+<label>Avis<textarea id="text" maxlength="2000" required rows="5"></textarea></label>
+<button>Analyser</button></form><output aria-live="polite"></output>
+<script type="module">
+import {predire} from './client.mjs';
+const form=document.querySelector('form'), out=document.querySelector('output');
+form.addEventListener('submit', async e=>{
+  e.preventDefault(); const button=form.querySelector('button'); button.disabled=true;
+  out.textContent='Analyse en cours…';
+  try {const r=await predire(document.querySelector('#url').value,document.querySelector('#key').value,document.querySelector('#text').value);
+    out.textContent=({POSITIVE:'Avis positif',NEGATIVE:'Avis négatif',INDETERMINE:'À faire vérifier par un humain'})[r.label]+' — '+Math.round(r.score*100)+' %';
+  } catch(e) {out.textContent=e instanceof TypeError ? 'API injoignable : vérifiez son adresse et les origines autorisées.' : e.message;}
+  finally {button.disabled=false;}
+});
+</script></html>

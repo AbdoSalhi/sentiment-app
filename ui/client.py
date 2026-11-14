@@ -6,6 +6,9 @@ from collections import Counter
 from dataclasses import dataclass
 
 import httpx
+from dotenv import load_dotenv
+
+load_dotenv()
 
 VERDICTS = {
     "POSITIVE": "Avis positif",
@@ -28,13 +31,22 @@ class Reponse:
 
 
 def creer_session() -> httpx.Client:
-    return httpx.Client(base_url=os.environ.get("API_URL", "http://127.0.0.1:8000"), timeout=10)
+    return httpx.Client(base_url=os.environ.get("API_URL", "http://127.0.0.1:8000"), timeout=10,
+                        headers={"X-API-Key": os.environ.get("API_KEY", "")})
 
 
 def _erreur_http(response: httpx.Response) -> Reponse | None:
     if response.status_code == 200:
         return None
-    if response.status_code == 422:
+    try:
+        code = response.json().get("erreur", {}).get("code", "")
+    except (ValueError, AttributeError):
+        code = ""
+    if code == "NON_AUTHENTIFIE" or response.status_code == 401:
+        return Reponse(False, message="Clé d'API absente ou refusée : configurez API_KEY.")
+    if code == "ACCES_REFUSE" or response.status_code == 403:
+        return Reponse(False, message="Accès refusé pour cette clé d'API.")
+    if code == "ENTREE_INVALIDE" or response.status_code == 422:
         return Reponse(False, message=REFUS)
     if response.status_code == 503:
         return Reponse(False, message=SANS_MODELE)
@@ -43,7 +55,7 @@ def _erreur_http(response: httpx.Response) -> Reponse | None:
 
 def sante(session: httpx.Client) -> Reponse:
     try:
-        response = session.get("/health")
+        response = session.get("/v1/health")
         error = _erreur_http(response)
         if error is not None:
             return error
@@ -64,7 +76,7 @@ def sante(session: httpx.Client) -> Reponse:
 
 def predire(session: httpx.Client, texte: str) -> Reponse:
     try:
-        response = session.post("/predict", json={"text": texte})
+        response = session.post("/v1/predict", json={"text": texte})
         error = _erreur_http(response)
         if error is not None:
             return error

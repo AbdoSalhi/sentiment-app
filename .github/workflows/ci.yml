@@ -1,7 +1,7 @@
 name: CI
 on: [push, pull_request]
 jobs:
-  tp5:
+  verification:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -28,3 +28,19 @@ jobs:
         run: . .venv/bin/activate && python -m mypy api
       - name: Tests et couverture
         run: . .venv/bin/activate && python -m pytest -q --cov=api --cov-report=term-missing --cov-fail-under=95
+
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - name: Tests du client web
+        run: node --test web/client.test.mjs
+      - name: Construire et vérifier le paquet hors des sources
+        run: |
+          . .venv/bin/activate
+          python scripts/construire.py
+          python scripts/verifier_livrable.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sentiment-app-1.0.0
+          path: |
+            dist/*
+            docs/livrable-tp4.txt

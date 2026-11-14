@@ -13,7 +13,7 @@ from ui import client
 
 @pytest.fixture
 def session():
-    with TestClient(app) as connection:
+    with TestClient(app, headers={"X-API-Key": "test-client-key-123456"}) as connection:
         yield connection
 
 
@@ -99,7 +99,10 @@ def test_erreur_http_sans_detail_interne(status):
     with httpx.Client(base_url="http://test", transport=httpx.MockTransport(response)) as session:
         for result in (client.sante(session), client.predire(session, "Avis")):
             assert not result.ok
-            assert str(status) in result.message
+            if status == 401:
+                assert "API_KEY" in result.message
+            else:
+                assert str(status) in result.message
             assert "secret" not in result.message
 
 

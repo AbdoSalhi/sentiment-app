@@ -60,6 +60,16 @@ with client.creer_session() as session:
                     avis["confiance"] = [r.score for r in reponses]
                     st.dataframe(avis, use_container_width=True, hide_index=True)
                     st.write(client.resumer(reponses))
+                    st.subheader("Répartition des verdicts")
+                    st.bar_chart(avis["verdict"].value_counts())
+                    st.subheader("Distribution de la confiance")
+                    tranches = pd.cut(
+                        avis["confiance"], bins=[0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+                        labels=["0,5 à 0,6", "0,6 à 0,7", "0,7 à 0,8", "0,8 à 0,9", "0,9 à 1"],
+                        include_lowest=True,
+                    )
+                    st.bar_chart(tranches.value_counts().sort_index())
+                    st.caption("Sous 0,6 : avis renvoyés à un humain. Erreurs exclues des confiances.")
                     st.download_button(
                         "Télécharger les résultats", avis.to_csv(index=False).encode("utf-8-sig"),
                         file_name="resultats.csv", mime="text/csv",

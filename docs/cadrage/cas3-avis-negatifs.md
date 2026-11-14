@@ -19,19 +19,19 @@ Cocher une seule case :
 
 ## Justification (obligatoire, citer au moins deux critères de la grille : (a) données étiquetées, (b) vérifiabilité, (c) coût par requête, (d) conséquence d'une erreur)
 
-Nous avons choisi le Machine Learning car (a) nous pouvons utiliser des avis clients déjà étiquetés selon leur niveau de priorité pour entraîner un modèle. De plus, (c) le coût par requête reste faible, ce qui permet de traiter un grand nombre d'avis rapidement.
+Nous avons choisi le Machine Learning car (a) nous pouvons utiliser des avis clients déjà étiquetés selon leur sentiment pour entraîner un modèle. De plus, (c) le coût par requête reste faible, ce qui permet de traiter un grand nombre d'avis rapidement.
 
 ## Données nécessaires et leur origine (obligatoire)
 
-Les données nécessaires sont les avis clients collectés sur le site de l'entreprise ou les plateformes d'évaluation. Chaque avis devra être étiqueté selon son niveau de priorité, par exemple faible, moyen ou urgent.
+Les données nécessaires sont les avis clients collectés sur le site de l'entreprise ou les plateformes d'évaluation. Chaque avis devra être étiqueté selon son sentiment, positif ou négatif. La priorité opérationnelle sera décidée par le service client.
 
 ## Métrique de succès et seuil d'acceptation (obligatoire)
 
-L'objectif est d'obtenir un F1-score d'au moins 85 % sur un jeu de test, avec un rappel d'au moins 95 % pour les avis urgents.
+L'objectif est d'obtenir un F1 macro d'au moins 0,85 sur un jeu de test indépendant. Le rappel de la classe négative est suivi séparément ; la mesure du modèle de démonstration est de 0,931. Ce modèle ne détecte pas l'urgence. Sous 0,60 de confiance, l'API renvoie le cas à un humain.
 
 ## Conséquence d'une erreur et validation humaine prévue (obligatoire)
 
-Une erreur pourrait classer une réclamation urgente comme peu importante et retarder sa prise en charge. Les avis signalés comme urgents ou incertains seront donc vérifiés par un membre du service client.
+Une erreur pourrait masquer un avis négatif et retarder sa lecture. Les avis négatifs ou incertains seront vérifiés par le service client, qui évalue lui-même l'urgence.
 
 ## Risques éthiques ou de confidentialité (obligatoire)
 
